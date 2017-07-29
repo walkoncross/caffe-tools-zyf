@@ -151,7 +151,7 @@ def plot_chart(chart_type, path_to_png, path_to_log_list):
 
         data_file = get_data_file(chart_type, path_to_log)
         x_axis_field, y_axis_field = get_field_descriptions(chart_type)
-        print 'x_axis_field, y_axis_field: ', x_axis_field, y_axis_field
+#        print 'x_axis_field, y_axis_field: ', x_axis_field, y_axis_field
         x, y = get_field_indices(x_axis_field, y_axis_field)
         data = load_data(data_file, x, y)
         ## TODO: more systematic color cycle for lines
