@@ -135,16 +135,19 @@ def get_legend_loc(chart_type):
 
 def plot_chart(chart_type, path_to_png, path_to_log_list):
     for path_to_log in path_to_log_list:
-        if sys.platform=='win32':
-            print '--->parsing log by pars_log.py'
-            output_dir = osp.dirname(osp.abspath(path_to_log))
-            parse_log.main(['%s' % path_to_log, '--output_dir', output_dir])
-        else:
-            parsing_script = get_log_parsing_script()
-            parsing_cmd = '%s %s' % (parsing_script, path_to_log)
-            print '--->parsing script is: ', parsing_script
-            print '--->parsing cmd is: ', parsing_cmd
-            os.system(parsing_cmd)
+#        if sys.platform=='win32':
+#            print '--->parsing log by pars_log.py'
+#            output_dir = osp.dirname(osp.abspath(path_to_log))
+#            parse_log.main(['%s' % path_to_log, '--output_dir', output_dir])
+#        else:
+#            parsing_script = get_log_parsing_script()
+#            parsing_cmd = '%s %s' % (parsing_script, path_to_log)
+#            print '--->parsing script is: ', parsing_script
+#            print '--->parsing cmd is: ', parsing_cmd
+#            os.system(parsing_cmd)
+        print '--->parsing log by pars_log.py'
+        output_dir = osp.dirname(osp.abspath(path_to_log))
+        parse_log.main(['%s' % path_to_log, '--output_dir', output_dir])
 
         data_file = get_data_file(chart_type, path_to_log)
         x_axis_field, y_axis_field = get_field_descriptions(chart_type)
