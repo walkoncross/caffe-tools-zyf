@@ -220,4 +220,4 @@ if __name__ == '__main__':
 #    if len(sys.argv)<3:
 #        sys.argv.append(output_dir)
 
-    main(sys.argv)
+    main(sys.argv[1:])
