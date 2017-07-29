@@ -175,7 +175,7 @@ def write_csv(output_filename, dict_list, delimiter, verbose=False):
         print 'Wrote %s' % output_filename
 
 
-def parse_args():
+def parse_args(argv):
     description = ('Parse a Caffe training log into two CSV files '
                    'containing training and testing information')
     parser = argparse.ArgumentParser(description=description)
@@ -183,7 +183,8 @@ def parse_args():
     parser.add_argument('logfile_path',
                         help='Path to log file')
 
-    parser.add_argument('output_dir',
+    parser.add_argument('--output_dir',
+                        default='./',
                         help='Directory in which to place output CSV files')
 
     parser.add_argument('--verbose',
@@ -195,12 +196,14 @@ def parse_args():
                         help=('Column delimiter in output files '
                               '(default: \'%(default)s\')'))
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     return args
 
 
-def main():
-    args = parse_args()
+def main(argv):
+    print argv
+    args = parse_args(argv)
+    print 'args into parse_log.py: ', args
     train_dict_list, test_dict_list = parse_log(args.logfile_path)
     save_csv_files(args.logfile_path, args.output_dir, train_dict_list,
                    test_dict_list, delimiter=args.delimiter, verbose=args.verbose)
@@ -209,9 +212,12 @@ def main():
 if __name__ == '__main__':
     import sys
     logfile_path = r'C:\zyf\dnn_models\face_models\centerloss\train-log-noval\centerface_train_noval.log'
-    output_dir = './'
+
+#    output_dir = './'
     if len(sys.argv)<2:
         sys.argv.append(logfile_path)
-        sys.argv.append(output_dir)
 
-    main()
+#    if len(sys.argv)<3:
+#        sys.argv.append(output_dir)
+
+    main(sys.argv)
