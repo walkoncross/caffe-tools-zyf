@@ -89,12 +89,47 @@ def get_field_descriptions(chart_type):
     x_axis_field = description[1]
     return x_axis_field, y_axis_field
 
-def get_field_indices(x_axis_field, y_axis_field):
+def get_field_indices(x_axis_field, y_axis_field, data_file=None):
     data_file_type = get_data_file_type(chart_type)
 #    print data_file_type
     fields = create_field_index()[0][data_file_type]
 #    print fields
-    return fields[x_axis_field], fields[y_axis_field]
+    if data_file:
+        fp = open(data_file, 'r')
+        line = fp.readline().strip()
+        data_file_fields = line.split(',')
+        print 'data_file_fields:', data_file_fields
+        fp.close()
+
+        idx = -1
+        if 'loss' in y_axis_field:
+            for i in range(len(data_file_fields)):
+                if 'loss' in data_file_fields[i]:
+                    idx = i
+                    break
+
+            if 'loss2' in y_axis_field and idx >= 0:
+                idx2 = -1
+                for i in range(idx2, len(data_file_fields)):
+                    if 'loss' in data_file_fields[i]:
+                        idx2 = i
+                        break
+                idx = idx2
+
+        if 'accuracy' in y_axis_field:
+            for i in range(len(data_file_fields)):
+                if 'accuracy' in data_file_fields[i]:
+                    idx = i
+                    break
+        print 'idx for %s in data_file_fields: ' % y_axis_field, idx
+
+        if idx >= 0:
+            return fields[x_axis_field], idx
+        else:
+            return fields[x_axis_field], fields[y_axis_field]
+
+    else:
+        return fields[x_axis_field], fields[y_axis_field]
 
 def load_data(data_file, field_idx0, field_idx1):
 #    print data_file
@@ -155,7 +190,7 @@ def plot_chart(chart_type, path_to_png, path_to_log_list):
         data_file = get_data_file(chart_type, path_to_log)
         x_axis_field, y_axis_field = get_field_descriptions(chart_type)
 #        print 'x_axis_field, y_axis_field: ', x_axis_field, y_axis_field
-        x, y = get_field_indices(x_axis_field, y_axis_field)
+        x, y = get_field_indices(x_axis_field, y_axis_field, data_file)
         data = load_data(data_file, x, y)
         ## TODO: more systematic color cycle for lines
 #        color = [random.random(), random.random(), random.random()]
