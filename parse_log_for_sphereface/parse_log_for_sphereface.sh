@@ -23,6 +23,7 @@ sed -i '/prefetch queue empty/d' aux.txt
 sed -i '/Iteration .* loss/d' aux.txt
 sed -i '/Iteration .* lr/d' aux.txt
 sed -i '/Train net/d' aux.txt
+sed -i '/MultiStep Status:/d' aux.txt
 grep 'Iteration ' aux.txt | sed  's/.*Iteration \([[:digit:]]*\).*/\1/g' > aux0.txt
 grep 'Test net output #0' aux.txt | awk '{print $11}' > aux1.txt
 grep 'Test net output #2' aux.txt | awk '{print $11}' > aux2.txt
@@ -46,8 +47,10 @@ grep ', loss = ' $1 >> aux.txt
 grep 'Iteration ' aux.txt | sed  's/.*Iteration \([[:digit:]]*\).*/\1/g' > aux0.txt
 grep ', loss = ' $1 | awk -F = '{print $2}' > aux1.txt
 grep ', lr = ' $1 | awk '{print $9}' > aux2.txt
-grep ': lambda = ' $1 | awk -F = '{print $2}' > aux5.txt
-grep ': softmax_loss = ' $1 | awk -F = '{print $2}' | awk '{print $1}'> aux6.txt
+# grep ': lambda = ' $1 | awk -F = '{print $2}' > aux5.txt
+# grep ': softmax_loss = ' $1 | awk -F = '{print $2}' | awk '{print $1}'> aux6.txt
+grep 'Train net output #0' $1 | awk -F = '{print $2}' > aux5.txt
+grep 'Train net output #1' $1 | awk -F = '{print $2}' | awk '{print $1}'> aux6.txt
 
 # Extracting elapsed seconds
 $DIR/extract_seconds.py aux.txt aux3.txt
