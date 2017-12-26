@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import inspect
 import os
+import osp as osp
 import random
 import sys
 import shutil
@@ -16,13 +17,13 @@ import matplotlib.markers as mks
 
 
 def get_log_parsing_script():
-    dirname = os.path.dirname(os.path.abspath(inspect.getfile(
+    dirname = osp.dirname(osp.abspath(inspect.getfile(
         inspect.currentframe())))
     return dirname + '/parse_log_for_sphereface.sh'
 
 
-def get_log_file_suffix():
-    return '.log'
+# def get_log_file_suffix():
+#     return '.log'
 
 
 def get_chart_type_description_separator():
@@ -79,8 +80,8 @@ def get_data_file_type(chart_type):
 
 
 def get_data_file(chart_type, path_to_log):
-    return (os.path.basename(path_to_log) + '.' +
-            get_data_file_type(chart_type).lower())
+    return (osp.basename(path_to_log) + '.' +
+            get_data_file_type(chart_type).lower() + '.txt')
 
 
 def get_field_descriptions(chart_type):
@@ -122,8 +123,9 @@ def random_marker():
 
 
 def get_data_label(path_to_log):
-    label = path_to_log[path_to_log.rfind('/') + 1: path_to_log.rfind(
-        get_log_file_suffix())]
+    # label = path_to_log[path_to_log.rfind('/') + 1: path_to_log.rfind(
+    #     get_log_file_suffix())]
+    label = osp.splitext(osp.basename(path_to_log))[0]
     return label
 
 
@@ -137,10 +139,16 @@ def get_legend_loc(chart_type):
     return loc
 
 
-def plot_chart(chart_type, path_to_png, path_to_log_list):
+def plot_chart(chart_type, path_to_png, path_to_log_list, force_parse=True):
     for path_to_log in path_to_log_list:
-        os.system('%s %s' % (get_log_parsing_script(), path_to_log))
         data_file = get_data_file(chart_type, path_to_log)
+        if not force_parse and osp.exists(data_file):
+            print '===> Parsing result data file already exists: ', data_file
+            print 'Will use this data file. Please use --force-parse option if you want reparse the log files'
+        else:
+            print '===> Parsing log file: ', path_to_log
+            os.system('%s %s' % (get_log_parsing_script(), path_to_log))
+
         x_axis_field, y_axis_field = get_field_descriptions(chart_type)
         x, y = get_field_indices(x_axis_field, y_axis_field)
         data = load_data(data_file, x, y)
@@ -177,12 +185,15 @@ Be warned that the fields in the training log may change in the future.
 You had better check the data files and change the mapping from field name to
  field index in create_field_index before designing your own plots.
 Usage:
-    ./plot_training_log.py chart_type[0-%s] /where/to/save.png /path/to/first.log ...
+    ./plot_training_log.py chart_type[0-%s] /where/to/save.png /path/to/first.log ... --force-parse
 Notes:
     1. Supporting multiple logs.
-    2. Log file name must end with the lower-cased "%s".
-Supported chart types:""" % (len(get_supported_chart_types()) - 1,
-                             get_log_file_suffix())
+    2. Append 'force-parse' at the end of options to force parsing log files.
+       Otherwise only use the parse results from last parsing.
+    """ % (len(get_supported_chart_types()) - 1)
+#     2. Log file name must end with the lower-cased "%s".
+# Supported chart types:""" % (len(get_supported_chart_types()) - 1,
+#                              get_log_file_suffix())                             
     supported_chart_types = get_supported_chart_types()
     num = len(supported_chart_types)
     for i in xrange(num):
@@ -206,17 +217,26 @@ if __name__ == '__main__':
         if not path_to_png.endswith('.png'):
             print 'Path must ends with png' % path_to_png
             sys.exit()
-        path_to_logs = sys.argv[3:]
+
+        # path_to_logs = sys.argv[3:]
+        force_parse = False
+        path_to_logs = []
+        for i in range(3, len(sys.argv)):
+            if 'force-parse' in sys.argv[i]:
+                force_parse = True
+            else:
+                path_to_logs.append(sys.argv[i])
+
         for path_to_log in path_to_logs:
-            if not os.path.exists(path_to_log):
+            if not osp.exists(path_to_log):
                 print 'Path does not exist: %s' % path_to_log
                 sys.exit()
-            if not path_to_log.endswith(get_log_file_suffix()):
-                print 'Log file must end in %s.' % get_log_file_suffix()
-                # print_help()
-                new_log = os.path.splitext(path_to_log)[0] + '.log'
-                print 'Copy %s into %s' % (path_to_log, new_log)
-                shutil.copy(path_to_log, new_log)
+            # if not path_to_log.endswith(get_log_file_suffix()):
+            #     print 'Log file must end in %s.' % get_log_file_suffix()
+            #     # print_help()
+            #     new_log = osp.splitext(path_to_log)[0] + '.log'
+            #     print 'Copy %s into %s' % (path_to_log, new_log)
+            #     shutil.copy(path_to_log, new_log)
 
         # plot_chart accpets multiple path_to_logs
-        plot_chart(chart_type, path_to_png, path_to_logs)
+        plot_chart(chart_type, path_to_png, path_to_logs, force_parse)

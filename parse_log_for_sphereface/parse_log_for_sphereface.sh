@@ -37,8 +37,8 @@ grep 'Testing net' $1 >> aux3.txt
 $DIR/extract_seconds.py aux3.txt aux4.txt
 
 # Generating
-echo '#Iters Seconds TestAccuracy TestLoss lambda Top5Acc'> $LOG.test
-paste aux0.txt aux4.txt aux1.txt aux2.txt aux5.txt aux6.txt | column -t >> $LOG.test
+echo '#Iters Seconds TestAccuracy TestLoss lambda Top5Acc'> $LOG.test.txt
+paste aux0.txt aux4.txt aux1.txt aux2.txt aux5.txt aux6.txt | column -t >> $LOG.test.txt
 rm aux.txt aux0.txt aux1.txt aux2.txt aux3.txt aux4.txt aux5.txt aux6.txt
 
 # For extraction of time since this line contains the start time
@@ -56,6 +56,6 @@ grep 'Train net output #1' $1 | awk -F = '{print $2}' | awk '{print $1}'> aux6.t
 $DIR/extract_seconds.py aux.txt aux3.txt
 
 # Generating
-echo '#Iters Seconds TrainingLoss LearningRate lambda softmax_loss'> $LOG.train
-paste aux0.txt aux3.txt aux1.txt aux2.txt aux5.txt aux6.txt | column -t >> $LOG.train
+echo '#Iters Seconds TrainingLoss LearningRate lambda softmax_loss'> $LOG.train.txt
+paste aux0.txt aux3.txt aux1.txt aux2.txt aux5.txt aux6.txt | column -t >> $LOG.train.txt
 rm aux.txt aux0.txt aux1.txt aux2.txt  aux3.txt aux5.txt aux6.txt
