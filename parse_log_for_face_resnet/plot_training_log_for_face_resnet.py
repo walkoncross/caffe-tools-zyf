@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import inspect
 import os
-import osp as osp
+import os.path as osp
 import random
 import sys
-import shutil
+#import shutil
 
 import matplotlib
 matplotlib.use('Agg')
@@ -80,9 +80,10 @@ def get_data_file_type(chart_type):
 
 
 def get_data_file(chart_type, path_to_log):
-    return (osp.basename(path_to_log) + '.' +
-            get_data_file_type(chart_type).lower() + '.txt')
-
+    dir_name = osp.dirname(osp.abspath(path_to_log))
+    base_name = osp.basename(path_to_log)
+    return osp.join(dir_name, base_name + '.' +
+    	get_data_file_type(chart_type).lower()  + '.txt')
 
 def get_field_descriptions(chart_type):
     description = get_chart_type_description(chart_type).split(

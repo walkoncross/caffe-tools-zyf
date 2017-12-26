@@ -147,10 +147,10 @@ def save_csv_files(logfile_path, output_dir, train_dict_list, test_dict_list,
     """
 
     log_basename = os.path.basename(logfile_path)
-    train_filename = os.path.join(output_dir, log_basename + '.train')
+    train_filename = os.path.join(output_dir, log_basename + '.train.txt')
     write_csv(train_filename, train_dict_list, delimiter, verbose)
 
-    test_filename = os.path.join(output_dir, log_basename + '.test')
+    test_filename = os.path.join(output_dir, log_basename + '.test.txt')
     write_csv(test_filename, test_dict_list, delimiter, verbose)
 
 

@@ -1,46 +1,52 @@
 #!/usr/bin/env python
 import inspect
 import os
+import os.path as osp
 import random
 import sys
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.cm as cmx
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import matplotlib.legend as lgd
 import matplotlib.markers as mks
 
-import os.path as osp
 import parse_log
 
 
 def get_log_parsing_script():
-    dirname = os.path.dirname(os.path.abspath(inspect.getfile(
+    dirname = osp.dirname(osp.abspath(inspect.getfile(
         inspect.currentframe())))
 
     return dirname + '/parse_log.sh'
 
+
 def get_log_file_suffix():
     return '.log'
 
+
 def get_chart_type_description_separator():
     return '  vs. '
+
 
 def is_x_axis_field(field):
     x_axis_fields = ['Iters', 'Seconds']
     return field in x_axis_fields
 
+
 def create_field_index():
     train_key = 'Train'
     test_key = 'Test'
-    field_index = {train_key:{'Iters':0, 'Seconds':1,
-                              train_key + ' learning rate':2,
-                              train_key + ' loss':3,
-                              train_key + ' loss2':4},
-                   test_key:{'Iters':0, 'Seconds':1,
-                             test_key + ' learning rate':2,
-                             test_key + ' loss':3,
-                             test_key + ' loss2':4,
-                             test_key + ' accuracy':5}
+    field_index = {train_key: {'Iters': 0, 'Seconds': 1,
+                               train_key + ' learning rate': 2,
+                               train_key + ' loss': 3,
+                               train_key + ' loss2': 4},
+                   test_key: {'Iters': 0, 'Seconds': 1,
+                              test_key + ' learning rate': 2,
+                              test_key + ' loss': 3,
+                              test_key + ' loss2': 4,
+                              test_key + ' accuracy': 5}
                    }
     fields = set()
     for data_file_type in field_index.keys():
@@ -51,6 +57,7 @@ def create_field_index():
     fields.sort()
 #    print 'fields: ', fields
     return field_index, fields
+
 
 def get_supported_chart_types():
     field_index, fields = create_field_index()
@@ -65,22 +72,25 @@ def get_supported_chart_types():
                         fields[j]))
     return supported_chart_types
 
+
 def get_chart_type_description(chart_type):
     supported_chart_types = get_supported_chart_types()
     chart_type_description = supported_chart_types[chart_type]
     return chart_type_description
+
 
 def get_data_file_type(chart_type):
     description = get_chart_type_description(chart_type)
     data_file_type = description.split()[0]
     return data_file_type
 
+
 def get_data_file(chart_type, path_to_log):
     dir_name = osp.dirname(osp.abspath(path_to_log))
     base_name = osp.basename(path_to_log)
     return osp.join(dir_name, base_name + '.' +
-                        get_data_file_type(chart_type).lower()
-            )
+                    get_data_file_type(chart_type).lower() + '.txt')
+
 
 def get_field_descriptions(chart_type):
     description = get_chart_type_description(chart_type).split(
@@ -88,6 +98,7 @@ def get_field_descriptions(chart_type):
     y_axis_field = description[0]
     x_axis_field = description[1]
     return x_axis_field, y_axis_field
+
 
 def get_field_indices(x_axis_field, y_axis_field, data_file=None):
     data_file_type = get_data_file_type(chart_type)
@@ -131,14 +142,15 @@ def get_field_indices(x_axis_field, y_axis_field, data_file=None):
     else:
         return fields[x_axis_field], fields[y_axis_field]
 
+
 def load_data(data_file, field_idx0, field_idx1):
-#    print data_file
+    #    print data_file
 
     data = [[], []]
     skip = 1
     with open(data_file, 'r') as f:
         for line in f:
-            if skip: # skip the first line, which is the csv table head
+            if skip:  # skip the first line, which is the csv table head
                 skip = 0
                 continue
             line = line.strip()
@@ -151,16 +163,20 @@ def load_data(data_file, field_idx0, field_idx1):
                 data[1].append(float(fields[field_idx1].strip()))
     return data
 
+
 def random_marker():
     markers = mks.MarkerStyle.markers
     num = len(markers.keys())
     idx = random.randint(0, num - 1)
     return markers.keys()[idx]
 
+
 def get_data_label(path_to_log):
-    label = path_to_log[path_to_log.rfind('/')+1 : path_to_log.rfind(
-        get_log_file_suffix())]
+    # label = path_to_log[path_to_log.rfind('/') + 1: path_to_log.rfind(
+    #     get_log_file_suffix())]
+    label = osp.splitext(osp.basename(path_to_log))[0]
     return label
+
 
 def get_legend_loc(chart_type):
     x_axis, y_axis = get_field_descriptions(chart_type)
@@ -171,52 +187,60 @@ def get_legend_loc(chart_type):
         loc = 'upper right'
     return loc
 
-def plot_chart(chart_type, path_to_png, path_to_log_list):
-    for path_to_log in path_to_log_list:
-#        if sys.platform=='win32':
-#            print '--->parsing log by pars_log.py'
-#            output_dir = osp.dirname(osp.abspath(path_to_log))
-#            parse_log.main(['%s' % path_to_log, '--output_dir', output_dir])
-#        else:
-#            parsing_script = get_log_parsing_script()
-#            parsing_cmd = '%s %s' % (parsing_script, path_to_log)
-#            print '--->parsing script is: ', parsing_script
-#            print '--->parsing cmd is: ', parsing_cmd
-#            os.system(parsing_cmd)
-        print '--->parsing log by pars_log.py'
-        output_dir = osp.dirname(osp.abspath(path_to_log))
-        parse_log.main(['%s' % path_to_log, '--output_dir', output_dir])
 
+def plot_chart(chart_type, path_to_png, path_to_log_list, force_parse=True):
+    for path_to_log in path_to_log_list:
+        #        if sys.platform=='win32':
+        #            print '--->parsing log by pars_log.py'
+        #            output_dir = osp.dirname(osp.abspath(path_to_log))
+        #            parse_log.main(['%s' % path_to_log, '--output_dir', output_dir])
+        #        else:
+        #            parsing_script = get_log_parsing_script()
+        #            parsing_cmd = '%s %s' % (parsing_script, path_to_log)
+        #            print '--->parsing script is: ', parsing_script
+        #            print '--->parsing cmd is: ', parsing_cmd
+        #            os.system(parsing_cmd)
         data_file = get_data_file(chart_type, path_to_log)
+        if not force_parse and osp.exists(data_file):
+            print '===> Parsing result data file already exists: ', data_file
+            print 'Will use this data file. Please use --force-parse option if you want reparse the log files'
+        else:
+            print '===> Parsing log file: ', path_to_log
+            output_dir = osp.dirname(osp.abspath(path_to_log))
+            parse_log.main(
+                ['%s' % path_to_log, '--output_dir', output_dir])
+
         x_axis_field, y_axis_field = get_field_descriptions(chart_type)
 #        print 'x_axis_field, y_axis_field: ', x_axis_field, y_axis_field
         x, y = get_field_indices(x_axis_field, y_axis_field, data_file)
         data = load_data(data_file, x, y)
-        ## TODO: more systematic color cycle for lines
+        # TODO: more systematic color cycle for lines
 #        color = [random.random(), random.random(), random.random()]
-#        print color
-        color = [1.0, 0.0, 0.0] # red
+        color = 'red'
+        color = [1.0, 0.0, 0.0]  # red
 #        color = [0.0, 1.0, 0.0] # green
 #        color = [0.0, 0.0, 1.0] # blue
         label = get_data_label(path_to_log)
         linewidth = 0.75
-        ## If there too many datapoints, do not use marker.
+        # If there too many datapoints, do not use marker.
         use_marker = False
 #        use_marker = True
         if not use_marker:
-            plt.plot(data[0], data[1], label = label, color = color,
-                     linewidth = linewidth)
+            plt.plot(data[0], data[1], label=label, color=color,
+                     linewidth=linewidth)
         else:
-            marker = random_marker()
-            plt.plot(data[0], data[1], label = label, color = color,
-                     marker = marker, linewidth = linewidth)
+            # marker = random_marker()
+            marker = 'x'
+            plt.plot(data[0], data[1], label=label, color=color,
+                     marker=marker, linewidth=linewidth)
     legend_loc = get_legend_loc(chart_type)
-    plt.legend(loc = legend_loc, ncol = 1) # ajust ncol to fit the space
+    plt.legend(loc=legend_loc, ncol=1)  # ajust ncol to fit the space
     plt.title(get_chart_type_description(chart_type))
     plt.xlabel(x_axis_field)
     plt.ylabel(y_axis_field)
     plt.savefig(path_to_png)
-    plt.show()
+    # plt.show()
+
 
 def print_help():
     print """This script mainly serves as the basis of your customizations.
@@ -226,46 +250,63 @@ Be warned that the fields in the training log may change in the future.
 You had better check the data files and change the mapping from field name to
  field index in create_field_index before designing your own plots.
 Usage:
-    ./plot_training_log.py chart_type[0-%s] /where/to/save.png /path/to/first.log ...
+    ./plot_training_log.py chart_type[0-%s] /where/to/save.png /path/to/first.log ... --force-parse
 Notes:
     1. Supporting multiple logs.
-    2. Log file name must end with the lower-cased "%s".
-Supported chart types:""" % (len(get_supported_chart_types()) - 1,
-                             get_log_file_suffix())
+    2. Append 'force-parse' at the end of options to force parsing log files.
+       Otherwise only use the parse results from last parsing.
+    """ % (len(get_supported_chart_types()) - 1)
+#     2. Log file name must end with the lower-cased "%s".
+# Supported chart types:""" % (len(get_supported_chart_types()) - 1,
+#                              get_log_file_suffix())
     supported_chart_types = get_supported_chart_types()
     num = len(supported_chart_types)
     for i in xrange(num):
         print '    %d: %s' % (i, supported_chart_types[i])
-    print  '\n==================\n'
+    print '\n==================\n'
 #    sys.exit()
+
 
 def is_valid_chart_type(chart_type):
     return chart_type >= 0 and chart_type < len(get_supported_chart_types())
 
+
 if __name__ == '__main__':
     print_help()
     if len(sys.argv) < 4:
-#        print_help()
+        #        print_help()
         pass
     else:
         chart_type = int(sys.argv[1])
         print 'chart_type: ', chart_type
         if not is_valid_chart_type(chart_type):
             print '%s is not a valid chart type.' % chart_type
-#            print_help()
+            print_help()
         path_to_png = sys.argv[2]
         print 'path_to_png:', path_to_png
         if not path_to_png.endswith('.png'):
             print 'Path must ends with png' % path_to_png
             sys.exit()
-        path_to_logs = sys.argv[3:]
-        print 'path_to_logs:', path_to_logs
+
+        # path_to_logs = sys.argv[3:]
+        force_parse = False
+        path_to_logs = []
+        for i in range(3, len(sys.argv)):
+            if 'force-parse' in sys.argv[i]:
+                force_parse = True
+            else:
+                path_to_logs.append(sys.argv[i])
+
         for path_to_log in path_to_logs:
-            if not os.path.exists(path_to_log):
+            if not osp.exists(path_to_log):
                 print 'Path does not exist: %s' % path_to_log
                 sys.exit()
-            if not path_to_log.endswith(get_log_file_suffix()):
-                print 'Log file must end in %s.' % get_log_file_suffix()
-#                print_help()
-        ## plot_chart accpets multiple path_to_logs
-        plot_chart(chart_type, path_to_png, path_to_logs)
+            # if not path_to_log.endswith(get_log_file_suffix()):
+            #     print 'Log file must end in %s.' % get_log_file_suffix()
+            #     # print_help()
+            #     new_log = osp.splitext(path_to_log)[0] + '.log'
+            #     print 'Copy %s into %s' % (path_to_log, new_log)
+            #     shutil.copy(path_to_log, new_log)
+
+        # plot_chart accpets multiple path_to_logs
+        plot_chart(chart_type, path_to_png, path_to_logs, force_parse)
