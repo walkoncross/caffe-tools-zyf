@@ -1,8 +1,10 @@
-import caffe
-import numpy as np
-import os.path as osp
 import sys
+import os.path as osp
 
+import numpy as np
+
+import caffe.io
+from caffe.proto import caffe_pb2
 
 def npy_to_binaryproto(npy_file, bp_file):
 
@@ -25,7 +27,7 @@ def npy_to_binaryproto(npy_file, bp_file):
         f.write(blob.SerializeToString())
 
     # reload saved bp_file
-    blob = caffe.proto.caffe_pb2.BlobProto()
+    blob = caffe_pb2.BlobProto()
     data = open(bp_file, 'rb').read()
     blob.ParseFromString(data)
     arr = caffe.io.blobproto_to_array(blob)

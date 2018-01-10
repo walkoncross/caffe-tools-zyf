@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 #-*- coding: UTF-8 -*-
-
-import caffe
-import numpy as np
-
 import sys
 import argparse
+
+import numpy as np
+
+import caffe.io
+from caffe.proto import caffe_pb2
 
 
 def parse_argv(argvs):
@@ -28,7 +29,7 @@ def parse_argv(argvs):
 
 
 def binaryproto_to_npy(bp_file, npy_file=None):
-    blob = caffe.proto.caffe_pb2.BlobProto()
+    blob = caffe_pb2.BlobProto()
     data = open(bp_file, 'rb').read()
     blob.ParseFromString(data)
 
